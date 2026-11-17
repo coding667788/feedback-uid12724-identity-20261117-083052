@@ -1,0 +1,12 @@
+实现一个本地服务间令牌交换器，使用HMAC-SHA256自定义令牌封装，只接受预注册的服务与交换边。
+
+请从空目录实现以下可运行工具。环境为 Windows、Python 3.12、仅CPU；不使用Docker或真实外部服务。除题面明确允许的cryptography外只用标准库。输入样例、模拟组件和测试数据由你在项目内构造，不存在另行提供的附件。
+
+核心要求：
+1. 令牌含issuer、subject、actor_chain、audience、scopes、expires_at、jti；每次交换验证调用服务等于原audience，目标必须位于允许交换边，scope只能缩小，到期时间不能延长。subject保持原始用户，actor_chain追加调用服务，最长4跳且不得成环。
+2. 租户和签名密钥ID必须来自受信注册表，令牌头不能指定远程密钥地址；拒绝重复JSON键、不规范base64url及未知算法。明确各字段的规范化签名表示，不能只验证签名而忽略受众和委托链。
+3. 每个原jti到目标audience最多创建一份交换结果，同request_id重试可恢复原结果；撤销任一祖先jti后，后代在下一次在线验证必须失效。用SQLite保证多进程交换与撤销提交顺序一致，避免只用内存祖先表。
+
+必须覆盖的验收场景：混淆代理、跨租户同kid、scope扩大、链环、第五跳、并发重复交换及祖先撤销后重启；提供合法两跳链与每一步拒绝证据。
+
+交付源代码、README、样例及自动化测试。提供 python -m solution --input cases.json --output result.json 和 python -m unittest discover -s tests -v 两个入口；cases.json可引用项目内源文件或二进制样例。输入输出schema、错误码及未写明的非安全性细节自行设计并完整说明，不能放宽上述要求。测试必须断言具体结果、状态或证据，不能只打印成功；固定种子可重放。所有操作局限在项目测试目录和本机模拟服务。
