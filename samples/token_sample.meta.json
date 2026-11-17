@@ -1,0 +1,16 @@
+{
+  "note": "token_sample.bin 是无换行的 HST1 令牌文本",
+  "payload": {
+    "iss": "acme-idp",
+    "sub": "user-7788",
+    "act": [],
+    "aud": "acme-gateway",
+    "scp": [
+      "orders:read",
+      "orders:write"
+    ],
+    "exp": 1700003600,
+    "jti": "file-sample-jti-0001",
+    "root": "file-sample-jti-0001"
+  }
+}

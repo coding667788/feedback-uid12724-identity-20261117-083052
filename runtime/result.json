@@ -1,0 +1,704 @@
+{
+  "input_file": "cases\\cases.json",
+  "registry": "cases\\..\\samples\\registry.json",
+  "db_path": "cases\\..\\runtime\\cases.db",
+  "summary": {
+    "total": 41,
+    "ok": 22,
+    "rejected": 19,
+    "other": 0
+  },
+  "results": [
+    {
+      "id": "mint_root",
+      "action": "mint",
+      "description": "受信发行服务铸造根令牌：aud=acme-gateway，含订单读写与计费只读 scope",
+      "status": "ok",
+      "token": "eyJhbGciOiJIUzI1NiIsImtpZCI6ImsxIiwidGVuYW50IjoidC1hY21lIiwidHlwIjoiSFNUMSJ9.eyJhY3QiOltdLCJhdWQiOiJhY21lLWdhdGV3YXkiLCJleHAiOjE3MDAwMDM2MDAsImlzcyI6ImFjbWUtaWRwIiwianRpIjoianRpLTNhZDMzMzc4NmUyOGRlN2FhMTcxMGQxZGM4ZTQ1MzE4Iiwicm9vdCI6Imp0aS0zYWQzMzM3ODZlMjhkZTdhYTE3MTBkMWRjOGU0NTMxOCIsInNjcCI6WyJiaWxsaW5nOnJlYWQiLCJvcmRlcnM6cmVhZCIsIm9yZGVyczp3cml0ZSJdLCJzdWIiOiJ1c2VyLTc3ODgifQ.NxyieGnd0N4gt3JqU3V023ZwfdwILjFR7oDTcDiZXKE",
+      "jti": "jti-3ad333786e28de7aa1710d1dc8e45318",
+      "root_jti": "jti-3ad333786e28de7aa1710d1dc8e45318",
+      "parent_jti": null,
+      "tenant": "t-acme",
+      "depth": 0,
+      "payload": {
+        "iss": "acme-idp",
+        "sub": "user-7788",
+        "act": [],
+        "aud": "acme-gateway",
+        "scp": [
+          "billing:read",
+          "orders:read",
+          "orders:write"
+        ],
+        "exp": 1700003600,
+        "jti": "jti-3ad333786e28de7aa1710d1dc8e45318",
+        "root": "jti-3ad333786e28de7aa1710d1dc8e45318"
+      },
+      "replayed": false,
+      "replay_reason": null
+    },
+    {
+      "id": "hop1_gateway_to_orders",
+      "action": "exchange",
+      "description": "合法第 1 跳：gateway 凭受众为自身的令牌向 orders 换发，scope 缩小（保留 billing:read 供下一跳）",
+      "status": "ok",
+      "token": "eyJhbGciOiJIUzI1NiIsImtpZCI6ImsxIiwidGVuYW50IjoidC1hY21lIiwidHlwIjoiSFNUMSJ9.eyJhY3QiOlsiYWNtZS1nYXRld2F5Il0sImF1ZCI6ImFjbWUtb3JkZXJzIiwiZXhwIjoxNzAwMDAzNjAwLCJpc3MiOiJhY21lLWdhdGV3YXkiLCJqdGkiOiJqdGktMjA2MjlkNDVmNzc3ODc1M2UzZWFhY2ExNDc4YWYzY2QiLCJyb290IjoianRpLTNhZDMzMzc4NmUyOGRlN2FhMTcxMGQxZGM4ZTQ1MzE4Iiwic2NwIjpbImJpbGxpbmc6cmVhZCIsIm9yZGVyczpyZWFkIl0sInN1YiI6InVzZXItNzc4OCJ9._6zYUxwkVbmgPHHMy6bVJbHCsShzVhcLd0BE9KAP_8A",
+      "jti": "jti-20629d45f7778753e3eaaca1478af3cd",
+      "root_jti": "jti-3ad333786e28de7aa1710d1dc8e45318",
+      "parent_jti": "jti-3ad333786e28de7aa1710d1dc8e45318",
+      "tenant": "t-acme",
+      "depth": 1,
+      "payload": {
+        "iss": "acme-gateway",
+        "sub": "user-7788",
+        "act": [
+          "acme-gateway"
+        ],
+        "aud": "acme-orders",
+        "scp": [
+          "billing:read",
+          "orders:read"
+        ],
+        "exp": 1700003600,
+        "jti": "jti-20629d45f7778753e3eaaca1478af3cd",
+        "root": "jti-3ad333786e28de7aa1710d1dc8e45318"
+      },
+      "replayed": false,
+      "replay_reason": null
+    },
+    {
+      "id": "hop1_verify_ok",
+      "action": "verify",
+      "description": "orders 在线验证第 1 跳令牌：受众绑定、链深度=1、祖先未撤销",
+      "status": "ok",
+      "valid": true,
+      "tenant": "t-acme",
+      "depth": 1,
+      "payload": {
+        "act": [
+          "acme-gateway"
+        ],
+        "aud": "acme-orders",
+        "exp": 1700003600,
+        "iss": "acme-gateway",
+        "jti": "jti-20629d45f7778753e3eaaca1478af3cd",
+        "root": "jti-3ad333786e28de7aa1710d1dc8e45318",
+        "scp": [
+          "billing:read",
+          "orders:read"
+        ],
+        "sub": "user-7788"
+      }
+    },
+    {
+      "id": "hop2_orders_to_billing",
+      "action": "exchange",
+      "description": "合法第 2 跳：orders 向 billing 换发，scope 进一步缩小为 billing:read",
+      "status": "ok",
+      "token": "eyJhbGciOiJIUzI1NiIsImtpZCI6ImsxIiwidGVuYW50IjoidC1hY21lIiwidHlwIjoiSFNUMSJ9.eyJhY3QiOlsiYWNtZS1nYXRld2F5IiwiYWNtZS1vcmRlcnMiXSwiYXVkIjoiYWNtZS1iaWxsaW5nIiwiZXhwIjoxNzAwMDAzNjAwLCJpc3MiOiJhY21lLW9yZGVycyIsImp0aSI6Imp0aS05MGJiMmI5NzZhYWFmMDgwM2VmYTQwZjg3MGVlNjNmMiIsInJvb3QiOiJqdGktM2FkMzMzNzg2ZTI4ZGU3YWExNzEwZDFkYzhlNDUzMTgiLCJzY3AiOlsiYmlsbGluZzpyZWFkIl0sInN1YiI6InVzZXItNzc4OCJ9.w4MNpDOJ42WycwP9o-Effyxd5M9zUdDdw4i_WX3UL0U",
+      "jti": "jti-90bb2b976aaaf0803efa40f870ee63f2",
+      "root_jti": "jti-3ad333786e28de7aa1710d1dc8e45318",
+      "parent_jti": "jti-20629d45f7778753e3eaaca1478af3cd",
+      "tenant": "t-acme",
+      "depth": 2,
+      "payload": {
+        "iss": "acme-orders",
+        "sub": "user-7788",
+        "act": [
+          "acme-gateway",
+          "acme-orders"
+        ],
+        "aud": "acme-billing",
+        "scp": [
+          "billing:read"
+        ],
+        "exp": 1700003600,
+        "jti": "jti-90bb2b976aaaf0803efa40f870ee63f2",
+        "root": "jti-3ad333786e28de7aa1710d1dc8e45318"
+      },
+      "replayed": false,
+      "replay_reason": null
+    },
+    {
+      "id": "hop2_verify_ok",
+      "action": "verify",
+      "description": "billing 在线验证第 2 跳令牌：actor_chain=[gateway, orders]，sub 保持不变",
+      "status": "ok",
+      "valid": true,
+      "tenant": "t-acme",
+      "depth": 2,
+      "payload": {
+        "act": [
+          "acme-gateway",
+          "acme-orders"
+        ],
+        "aud": "acme-billing",
+        "exp": 1700003600,
+        "iss": "acme-orders",
+        "jti": "jti-90bb2b976aaaf0803efa40f870ee63f2",
+        "root": "jti-3ad333786e28de7aa1710d1dc8e45318",
+        "scp": [
+          "billing:read"
+        ],
+        "sub": "user-7788"
+      }
+    },
+    {
+      "id": "confused_deputy_wrong_caller",
+      "action": "exchange",
+      "description": "混淆代理证据：billing 不是根令牌 audience，却试图持根令牌发起交换 -> AUDIENCE_MISMATCH",
+      "status": "rejected",
+      "error_code": "AUDIENCE_MISMATCH",
+      "message": "调用服务不等于令牌 audience",
+      "evidence": {
+        "caller": "acme-billing",
+        "aud": "acme-gateway",
+        "jti": "jti-3ad333786e28de7aa1710d1dc8e45318"
+      }
+    },
+    {
+      "id": "confused_deputy_unregistered_edge",
+      "action": "exchange",
+      "description": "混淆代理证据 2：orders 试图换发未注册边的 inventory -> EDGE_NOT_ALLOWED",
+      "status": "rejected",
+      "error_code": "EDGE_NOT_ALLOWED",
+      "message": "交换边 acme-orders -> acme-inventory 未在租户 t-acme 预注册",
+      "evidence": {
+        "tenant": "t-acme",
+        "caller": "acme-orders",
+        "target": "acme-inventory"
+      }
+    },
+    {
+      "id": "scope_escalation",
+      "action": "exchange",
+      "description": "scope 扩大证据：hop1 令牌无 billing:read，请求加入 -> SCOPE_ESCALATION",
+      "status": "rejected",
+      "error_code": "SCOPE_ESCALATION",
+      "message": "请求 scope 超出父令牌授权范围",
+      "evidence": {
+        "requested": [
+          "billing:read",
+          "orders:write"
+        ],
+        "parent_scopes": [
+          "billing:read",
+          "orders:read"
+        ],
+        "added": [
+          "orders:write"
+        ]
+      }
+    },
+    {
+      "id": "expiry_extension",
+      "action": "exchange",
+      "description": "到期延长证据：请求 exp 晚于父令牌 exp -> EXPIRY_EXTENDED",
+      "status": "rejected",
+      "error_code": "EXPIRY_EXTENDED",
+      "message": "新令牌到期时间晚于父令牌",
+      "evidence": {
+        "parent_exp": 1700003600,
+        "requested_exp": 1700004000
+      }
+    },
+    {
+      "id": "retry_same_request_id",
+      "action": "exchange",
+      "description": "同 request_id 重试：必须恢复 hop2 原结果（replayed=true，jti 相同）",
+      "status": "ok",
+      "token": "eyJhbGciOiJIUzI1NiIsImtpZCI6ImsxIiwidGVuYW50IjoidC1hY21lIiwidHlwIjoiSFNUMSJ9.eyJhY3QiOlsiYWNtZS1nYXRld2F5IiwiYWNtZS1vcmRlcnMiXSwiYXVkIjoiYWNtZS1iaWxsaW5nIiwiZXhwIjoxNzAwMDAzNjAwLCJpc3MiOiJhY21lLW9yZGVycyIsImp0aSI6Imp0aS05MGJiMmI5NzZhYWFmMDgwM2VmYTQwZjg3MGVlNjNmMiIsInJvb3QiOiJqdGktM2FkMzMzNzg2ZTI4ZGU3YWExNzEwZDFkYzhlNDUzMTgiLCJzY3AiOlsiYmlsbGluZzpyZWFkIl0sInN1YiI6InVzZXItNzc4OCJ9.w4MNpDOJ42WycwP9o-Effyxd5M9zUdDdw4i_WX3UL0U",
+      "jti": "jti-90bb2b976aaaf0803efa40f870ee63f2",
+      "root_jti": "jti-3ad333786e28de7aa1710d1dc8e45318",
+      "parent_jti": "jti-20629d45f7778753e3eaaca1478af3cd",
+      "tenant": "t-acme",
+      "depth": 2,
+      "payload": {
+        "act": [
+          "acme-gateway",
+          "acme-orders"
+        ],
+        "aud": "acme-billing",
+        "exp": 1700003600,
+        "iss": "acme-orders",
+        "jti": "jti-90bb2b976aaaf0803efa40f870ee63f2",
+        "root": "jti-3ad333786e28de7aa1710d1dc8e45318",
+        "scp": [
+          "billing:read"
+        ],
+        "sub": "user-7788"
+      },
+      "replayed": true,
+      "replay_reason": "request_id"
+    },
+    {
+      "id": "duplicate_exchange_new_request",
+      "action": "exchange",
+      "description": "去重证据：同根 jti 到 billing 的第二份交换结果（新 request_id、更窄 scope）-> DUPLICATE_EXCHANGE",
+      "status": "rejected",
+      "error_code": "DUPLICATE_EXCHANGE",
+      "message": "同一根 jti 到同一目标 audience 的交换结果已存在",
+      "evidence": {
+        "root_jti": "jti-3ad333786e28de7aa1710d1dc8e45318",
+        "target_aud": "acme-billing",
+        "existing_request_id": "req-hop2-0001",
+        "new_request_id": "req-attacker-0005"
+      }
+    },
+    {
+      "id": "request_id_conflict",
+      "action": "exchange",
+      "description": "request_id 冲突证据：复用 req-hop2-0001 但改变请求体（缩短过期）-> REQUEST_CONFLICT",
+      "status": "rejected",
+      "error_code": "REQUEST_CONFLICT",
+      "message": "同一 request_id 关联了不同的交换请求体",
+      "evidence": {
+        "request_id": "req-hop2-0001"
+      }
+    },
+    {
+      "id": "mint_globex_root",
+      "action": "mint",
+      "description": "另一租户 Globex 铸造根令牌（与 t-acme 同 kid=k1，密钥材料不同）",
+      "status": "ok",
+      "token": "eyJhbGciOiJIUzI1NiIsImtpZCI6ImsxIiwidGVuYW50IjoidC1nbG9iZXgiLCJ0eXAiOiJIU1QxIn0.eyJhY3QiOltdLCJhdWQiOiJnbG9iZXgtZ2F0ZXdheSIsImV4cCI6MTcwMDAwMTgwMCwiaXNzIjoiZ2xvYmV4LWlkcCIsImp0aSI6Imp0aS00Mzc5MzhhZDcxYmM4ZWRhMTllN2Y3MzkyMzhlZDcwZCIsInJvb3QiOiJqdGktNDM3OTM4YWQ3MWJjOGVkYTE5ZTdmNzM5MjM4ZWQ3MGQiLCJzY3AiOlsib3JkZXJzOnJlYWQiXSwic3ViIjoidXNlci05OTAwIn0.9yjEQJJrnTRqjk5-VauRxpxAK1C8ImTvOkz8q4G8v3Q",
+      "jti": "jti-437938ad71bc8eda19e7f739238ed70d",
+      "root_jti": "jti-437938ad71bc8eda19e7f739238ed70d",
+      "parent_jti": null,
+      "tenant": "t-globex",
+      "depth": 0,
+      "payload": {
+        "iss": "globex-idp",
+        "sub": "user-9900",
+        "act": [],
+        "aud": "globex-gateway",
+        "scp": [
+          "orders:read"
+        ],
+        "exp": 1700001800,
+        "jti": "jti-437938ad71bc8eda19e7f739238ed70d",
+        "root": "jti-437938ad71bc8eda19e7f739238ed70d"
+      },
+      "replayed": false,
+      "replay_reason": null
+    },
+    {
+      "id": "cross_tenant_presentation",
+      "action": "verify",
+      "description": "跨租户同 kid 证据 A：globex 令牌交给 acme-gateway 验证 -> AUDIENCE_MISMATCH/TENANT_MISMATCH",
+      "status": "rejected",
+      "error_code": "AUDIENCE_MISMATCH",
+      "message": "调用服务不等于令牌 audience",
+      "evidence": {
+        "caller": "acme-gateway",
+        "aud": "globex-gateway",
+        "jti": "jti-437938ad71bc8eda19e7f739238ed70d"
+      }
+    },
+    {
+      "id": "cross_tenant_forged_signature",
+      "action": "craft",
+      "description": "跨租户同 kid 证据 B：头声明 t-acme/k1，却用 t-globex/k1 密钥重签",
+      "status": "ok",
+      "crafted": true,
+      "mode": "cross_tenant_signed",
+      "token": "eyJhbGciOiJIUzI1NiIsImtpZCI6ImsxIiwidGVuYW50IjoidC1hY21lIiwidHlwIjoiSFNUMSJ9.eyJhY3QiOltdLCJhdWQiOiJhY21lLWdhdGV3YXkiLCJleHAiOjE3MDAwMDM2MDAsImlzcyI6ImFjbWUtaWRwIiwianRpIjoiY3JhZnQtY3Jvc3MtdGVuYW50LTAwMDEiLCJyb290IjoiY3JhZnQtY3Jvc3MtdGVuYW50LTAwMDEiLCJzY3AiOlsib3JkZXJzOnJlYWQiXSwic3ViIjoidXNlci03Nzg4In0.zzSKQHOOnVEyGyO0rwQ7SGUjCj5rRYX5rxB64kLGdNw",
+      "note": "仅用于负面测试；后续 verify/exchange 应拒绝"
+    },
+    {
+      "id": "cross_tenant_forged_verify",
+      "action": "verify",
+      "description": "跨租户伪造令牌在受害租户验证 -> BAD_SIGNATURE（同名 kid 无法绕过租户隔离）",
+      "status": "rejected",
+      "error_code": "BAD_SIGNATURE",
+      "message": "HMAC-SHA256 签名校验失败",
+      "evidence": {
+        "algorithm": "HS256",
+        "expected_length": 32
+      }
+    },
+    {
+      "id": "craft_remote_key_header",
+      "action": "craft",
+      "description": "封装拒绝证据：头携带 jku 远程密钥地址",
+      "status": "ok",
+      "crafted": true,
+      "mode": "remote_key_header",
+      "token": "eyJhbGciOiJIUzI1NiIsImprdSI6Imh0dHBzOi8va2V5cy5leGFtcGxlLmludmFsaWQva2V5cy5qc29uIiwia2lkIjoiazEiLCJ0ZW5hbnQiOiJ0LWFjbWUiLCJ0eXAiOiJIU1QxIn0.eyJhY3QiOltdLCJhdWQiOiJhY21lLWdhdGV3YXkiLCJleHAiOjE3MDAwMDM2MDAsImlzcyI6ImFjbWUtaWRwIiwianRpIjoiY3JhZnQtamt1LTAwMDEiLCJyb290IjoiY3JhZnQtamt1LTAwMDEiLCJzY3AiOlsib3JkZXJzOnJlYWQiXSwic3ViIjoidXNlci03Nzg4In0.looU2RnUVi__foExKyZltU7V2ZuITtf-0LDFIRcVkVY",
+      "note": "仅用于负面测试；后续 verify/exchange 应拒绝"
+    },
+    {
+      "id": "remote_key_header_verify",
+      "action": "verify",
+      "description": "jku 令牌在头解析阶段即被拒绝 -> INVALID_HEADER",
+      "status": "rejected",
+      "error_code": "INVALID_HEADER",
+      "message": "令牌头不允许远程密钥地址或内联密钥参数",
+      "evidence": {
+        "forbidden_keys": [
+          "jku"
+        ]
+      }
+    },
+    {
+      "id": "craft_unknown_alg",
+      "action": "craft",
+      "description": "封装拒绝证据：alg=RS256（仍用 HMAC 签名，排除签名噪音）",
+      "status": "ok",
+      "crafted": true,
+      "mode": "unknown_algorithm",
+      "token": "eyJhbGciOiJSUzI1NiIsImtpZCI6ImsxIiwidGVuYW50IjoidC1hY21lIiwidHlwIjoiSFNUMSJ9.eyJhY3QiOltdLCJhdWQiOiJhY21lLWdhdGV3YXkiLCJleHAiOjE3MDAwMDM2MDAsImlzcyI6ImFjbWUtaWRwIiwianRpIjoiY3JhZnQtYWxnLTAwMDEiLCJyb290IjoiY3JhZnQtYWxnLTAwMDEiLCJzY3AiOlsib3JkZXJzOnJlYWQiXSwic3ViIjoidXNlci03Nzg4In0.kKOgPFiCeN5g_zEFjo9T9YIiz1iCpqFL3KnuTgy4_D0",
+      "note": "仅用于负面测试；后续 verify/exchange 应拒绝"
+    },
+    {
+      "id": "unknown_alg_verify",
+      "action": "verify",
+      "description": "未知算法 -> UNKNOWN_ALGORITHM",
+      "status": "rejected",
+      "error_code": "UNKNOWN_ALGORITHM",
+      "message": "不支持的算法 'RS256'，本实现只接受 HS256",
+      "evidence": {
+        "received_alg": "RS256"
+      }
+    },
+    {
+      "id": "craft_dup_key",
+      "action": "craft",
+      "description": "封装拒绝证据：载荷手工含重复 aud 键",
+      "status": "ok",
+      "crafted": true,
+      "mode": "duplicate_json_key",
+      "token": "eyJhbGciOiJIUzI1NiIsImtpZCI6ImsxIiwidGVuYW50IjoidC1hY21lIiwidHlwIjoiSFNUMSJ9.eyJhY3QiOltdLCJhdWQiOiJhY21lLWdhdGV3YXkiLCJleHAiOjE3MDAwMDM2MDAsImlzcyI6ImFjbWUtaWRwIiwianRpIjoiY3JhZnQtZHVwLTAwMDEiLCJyb290IjoiY3JhZnQtZHVwLTAwMDEiLCJzY3AiOlsib3JkZXJzOnJlYWQiXSwic3ViIjoidXNlci03Nzg4IiwiYXVkIjoiZXZpbC1zdmMifQ.8I7x10PHC7TsHpYyLUZJqEKvS0lTaaZEQnWIW4E2iAo",
+      "note": "仅用于负面测试；后续 verify/exchange 应拒绝"
+    },
+    {
+      "id": "dup_key_verify",
+      "action": "verify",
+      "description": "重复 JSON 键 -> DUPLICATE_JSON_KEY",
+      "status": "rejected",
+      "error_code": "DUPLICATE_JSON_KEY",
+      "message": "JSON 对象存在重复键: 'aud'",
+      "evidence": {
+        "duplicate_key": "aud"
+      }
+    },
+    {
+      "id": "craft_bad_b64",
+      "action": "craft",
+      "description": "封装拒绝证据：签名段使用带 = 填充的非规范 base64url",
+      "status": "ok",
+      "crafted": true,
+      "mode": "non_canonical_b64",
+      "token": "eyJhbGciOiJIUzI1NiIsImtpZCI6ImsxIiwidGVuYW50IjoidC1hY21lIiwidHlwIjoiSFNUMSJ9.eyJhY3QiOltdLCJhdWQiOiJhY21lLWdhdGV3YXkiLCJleHAiOjE3MDAwMDM2MDAsImlzcyI6ImFjbWUtaWRwIiwianRpIjoiY3JhZnQtYjY0LTAwMDEiLCJyb290IjoiY3JhZnQtYjY0LTAwMDEiLCJzY3AiOlsib3JkZXJzOnJlYWQiXSwic3ViIjoidXNlci03Nzg4In0.K3GQhBRCyHHJQGNi_2qsW9exw5AlU2Arqwcr6rtKCDE=",
+      "note": "仅用于负面测试；后续 verify/exchange 应拒绝"
+    },
+    {
+      "id": "bad_b64_verify",
+      "action": "verify",
+      "description": "不规范 base64url -> MALFORMED_TOKEN",
+      "status": "rejected",
+      "error_code": "MALFORMED_TOKEN",
+      "message": "签名段 不允许 base64 填充 '='",
+      "evidence": {
+        "segment": "签名段",
+        "reason": "padding_forbidden"
+      }
+    },
+    {
+      "id": "craft_bad_sig",
+      "action": "craft",
+      "description": "封装拒绝证据：结构合法但签名被全 0 覆盖",
+      "status": "ok",
+      "crafted": true,
+      "mode": "wrong_signature",
+      "token": "eyJhbGciOiJIUzI1NiIsImtpZCI6ImsxIiwidGVuYW50IjoidC1hY21lIiwidHlwIjoiSFNUMSJ9.eyJhY3QiOltdLCJhdWQiOiJhY21lLWdhdGV3YXkiLCJleHAiOjE3MDAwMDM2MDAsImlzcyI6ImFjbWUtaWRwIiwianRpIjoiY3JhZnQtc2lnLTAwMDEiLCJyb290IjoiY3JhZnQtc2lnLTAwMDEiLCJzY3AiOlsib3JkZXJzOnJlYWQiXSwic3ViIjoidXNlci03Nzg4In0.AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "note": "仅用于负面测试；后续 verify/exchange 应拒绝"
+    },
+    {
+      "id": "bad_sig_verify",
+      "action": "verify",
+      "description": "签名不匹配 -> BAD_SIGNATURE",
+      "status": "rejected",
+      "error_code": "BAD_SIGNATURE",
+      "message": "HMAC-SHA256 签名校验失败",
+      "evidence": {
+        "algorithm": "HS256",
+        "expected_length": 32
+      }
+    },
+    {
+      "id": "craft_tampered_aud",
+      "action": "craft",
+      "description": "封装拒绝证据：签名后把 aud 改成 acme-orders 且不重签",
+      "status": "ok",
+      "crafted": true,
+      "mode": "tampered_audience",
+      "token": "eyJhbGciOiJIUzI1NiIsImtpZCI6ImsxIiwidGVuYW50IjoidC1hY21lIiwidHlwIjoiSFNUMSJ9.eyJhY3QiOltdLCJhdWQiOiJhY21lLW9yZGVycyIsImV4cCI6MTcwMDAwMzYwMCwiaXNzIjoiYWNtZS1pZHAiLCJqdGkiOiJjcmFmdC10YW1wZXItMDAwMSIsInJvb3QiOiJjcmFmdC10YW1wZXItMDAwMSIsInNjcCI6WyJvcmRlcnM6cmVhZCJdLCJzdWIiOiJ1c2VyLTc3ODgifQ.mbys4ZTdZrowyxemsavcUOvjmVM3xnlTe2Gp9Q53Cp8",
+      "note": "仅用于负面测试；后续 verify/exchange 应拒绝"
+    },
+    {
+      "id": "tampered_aud_verify",
+      "action": "verify",
+      "description": "aud 篡改破坏签名 -> BAD_SIGNATURE（签名绑定全部声明，不能只验签不看受众）",
+      "status": "rejected",
+      "error_code": "BAD_SIGNATURE",
+      "message": "HMAC-SHA256 签名校验失败",
+      "evidence": {
+        "algorithm": "HS256",
+        "expected_length": 32
+      }
+    },
+    {
+      "id": "verify_from_file",
+      "action": "verify",
+      "description": "通过 $file 引用项目内二进制样例 token_sample.bin 并在线验证",
+      "status": "ok",
+      "valid": true,
+      "tenant": "t-acme",
+      "depth": 0,
+      "payload": {
+        "act": [],
+        "aud": "acme-gateway",
+        "exp": 1700003600,
+        "iss": "acme-idp",
+        "jti": "file-sample-jti-0001",
+        "root": "file-sample-jti-0001",
+        "scp": [
+          "orders:read",
+          "orders:write"
+        ],
+        "sub": "user-7788"
+      }
+    },
+    {
+      "id": "chain_mint",
+      "action": "mint",
+      "description": "深度链租户铸造根令牌（aud=chain-svc-0）",
+      "status": "ok",
+      "token": "eyJhbGciOiJIUzI1NiIsImtpZCI6ImsxIiwidGVuYW50IjoidC1jaGFpbiIsInR5cCI6IkhTVDEifQ.eyJhY3QiOltdLCJhdWQiOiJjaGFpbi1zdmMtMCIsImV4cCI6MTcwMDAwNzIwMCwiaXNzIjoiY2hhaW4tc3ZjLTAiLCJqdGkiOiJqdGktMzIzYmNkNjVjMWUyMjU2YWJjYWE3ZmIzZTAzZDUzOGMiLCJyb290IjoianRpLTMyM2JjZDY1YzFlMjI1NmFiY2FhN2ZiM2UwM2Q1MzhjIiwic2NwIjpbImRhdGE6cmVhZCJdLCJzdWIiOiJ1c2VyLWNoYWluLTAwMSJ9.jyOocvv66zfA5gp-Xaka9-YTxXSo7MbVHzAA_9H3vD4",
+      "jti": "jti-323bcd65c1e2256abcaa7fb3e03d538c",
+      "root_jti": "jti-323bcd65c1e2256abcaa7fb3e03d538c",
+      "parent_jti": null,
+      "tenant": "t-chain",
+      "depth": 0,
+      "payload": {
+        "iss": "chain-svc-0",
+        "sub": "user-chain-001",
+        "act": [],
+        "aud": "chain-svc-0",
+        "scp": [
+          "data:read"
+        ],
+        "exp": 1700007200,
+        "jti": "jti-323bcd65c1e2256abcaa7fb3e03d538c",
+        "root": "jti-323bcd65c1e2256abcaa7fb3e03d538c"
+      },
+      "replayed": false,
+      "replay_reason": null
+    },
+    {
+      "id": "chain_hop1",
+      "action": "exchange",
+      "description": "深度链第 1 跳 0->1",
+      "status": "ok",
+      "token": "eyJhbGciOiJIUzI1NiIsImtpZCI6ImsxIiwidGVuYW50IjoidC1jaGFpbiIsInR5cCI6IkhTVDEifQ.eyJhY3QiOlsiY2hhaW4tc3ZjLTAiXSwiYXVkIjoiY2hhaW4tc3ZjLTEiLCJleHAiOjE3MDAwMDcyMDAsImlzcyI6ImNoYWluLXN2Yy0wIiwianRpIjoianRpLTE0OWI0MWIyMDZmMjYyZmE2MjNmNGE4MDBlMTRkZWRjIiwicm9vdCI6Imp0aS0zMjNiY2Q2NWMxZTIyNTZhYmNhYTdmYjNlMDNkNTM4YyIsInNjcCI6WyJkYXRhOnJlYWQiXSwic3ViIjoidXNlci1jaGFpbi0wMDEifQ.AisOQslvx63KEkEF-NnKsoBnRZQiVT6twTo43UyJQCk",
+      "jti": "jti-149b41b206f262fa623f4a800e14dedc",
+      "root_jti": "jti-323bcd65c1e2256abcaa7fb3e03d538c",
+      "parent_jti": "jti-323bcd65c1e2256abcaa7fb3e03d538c",
+      "tenant": "t-chain",
+      "depth": 1,
+      "payload": {
+        "iss": "chain-svc-0",
+        "sub": "user-chain-001",
+        "act": [
+          "chain-svc-0"
+        ],
+        "aud": "chain-svc-1",
+        "scp": [
+          "data:read"
+        ],
+        "exp": 1700007200,
+        "jti": "jti-149b41b206f262fa623f4a800e14dedc",
+        "root": "jti-323bcd65c1e2256abcaa7fb3e03d538c"
+      },
+      "replayed": false,
+      "replay_reason": null
+    },
+    {
+      "id": "chain_hop2",
+      "action": "exchange",
+      "description": "深度链第 2 跳 1->2",
+      "status": "ok",
+      "token": "eyJhbGciOiJIUzI1NiIsImtpZCI6ImsxIiwidGVuYW50IjoidC1jaGFpbiIsInR5cCI6IkhTVDEifQ.eyJhY3QiOlsiY2hhaW4tc3ZjLTAiLCJjaGFpbi1zdmMtMSJdLCJhdWQiOiJjaGFpbi1zdmMtMiIsImV4cCI6MTcwMDAwNzIwMCwiaXNzIjoiY2hhaW4tc3ZjLTEiLCJqdGkiOiJqdGktZjA4ZDI1Mjc4Y2M4NDRjMGU5YjNiMDc5N2JjMzNkMDEiLCJyb290IjoianRpLTMyM2JjZDY1YzFlMjI1NmFiY2FhN2ZiM2UwM2Q1MzhjIiwic2NwIjpbImRhdGE6cmVhZCJdLCJzdWIiOiJ1c2VyLWNoYWluLTAwMSJ9.xZW5uGCmnGizGZn5bEGMvYaaniN2EAdkjMTpnbWxKdY",
+      "jti": "jti-f08d25278cc844c0e9b3b0797bc33d01",
+      "root_jti": "jti-323bcd65c1e2256abcaa7fb3e03d538c",
+      "parent_jti": "jti-149b41b206f262fa623f4a800e14dedc",
+      "tenant": "t-chain",
+      "depth": 2,
+      "payload": {
+        "iss": "chain-svc-1",
+        "sub": "user-chain-001",
+        "act": [
+          "chain-svc-0",
+          "chain-svc-1"
+        ],
+        "aud": "chain-svc-2",
+        "scp": [
+          "data:read"
+        ],
+        "exp": 1700007200,
+        "jti": "jti-f08d25278cc844c0e9b3b0797bc33d01",
+        "root": "jti-323bcd65c1e2256abcaa7fb3e03d538c"
+      },
+      "replayed": false,
+      "replay_reason": null
+    },
+    {
+      "id": "chain_hop3",
+      "action": "exchange",
+      "description": "深度链第 3 跳 2->3",
+      "status": "ok",
+      "token": "eyJhbGciOiJIUzI1NiIsImtpZCI6ImsxIiwidGVuYW50IjoidC1jaGFpbiIsInR5cCI6IkhTVDEifQ.eyJhY3QiOlsiY2hhaW4tc3ZjLTAiLCJjaGFpbi1zdmMtMSIsImNoYWluLXN2Yy0yIl0sImF1ZCI6ImNoYWluLXN2Yy0zIiwiZXhwIjoxNzAwMDA3MjAwLCJpc3MiOiJjaGFpbi1zdmMtMiIsImp0aSI6Imp0aS00YTgyNGQ1YTk2ODhkYmRmY2I2ODc1NGEwZTBmNmJjOCIsInJvb3QiOiJqdGktMzIzYmNkNjVjMWUyMjU2YWJjYWE3ZmIzZTAzZDUzOGMiLCJzY3AiOlsiZGF0YTpyZWFkIl0sInN1YiI6InVzZXItY2hhaW4tMDAxIn0.RMQVKpgAgQATrXKqniJLh15Vl5jhYDOicPCm5jfg6Qs",
+      "jti": "jti-4a824d5a9688dbdfcb68754a0e0f6bc8",
+      "root_jti": "jti-323bcd65c1e2256abcaa7fb3e03d538c",
+      "parent_jti": "jti-f08d25278cc844c0e9b3b0797bc33d01",
+      "tenant": "t-chain",
+      "depth": 3,
+      "payload": {
+        "iss": "chain-svc-2",
+        "sub": "user-chain-001",
+        "act": [
+          "chain-svc-0",
+          "chain-svc-1",
+          "chain-svc-2"
+        ],
+        "aud": "chain-svc-3",
+        "scp": [
+          "data:read"
+        ],
+        "exp": 1700007200,
+        "jti": "jti-4a824d5a9688dbdfcb68754a0e0f6bc8",
+        "root": "jti-323bcd65c1e2256abcaa7fb3e03d538c"
+      },
+      "replayed": false,
+      "replay_reason": null
+    },
+    {
+      "id": "chain_hop4",
+      "action": "exchange",
+      "description": "深度链第 4 跳 3->4（边界，允许，actor_chain 长度=4）",
+      "status": "ok",
+      "token": "eyJhbGciOiJIUzI1NiIsImtpZCI6ImsxIiwidGVuYW50IjoidC1jaGFpbiIsInR5cCI6IkhTVDEifQ.eyJhY3QiOlsiY2hhaW4tc3ZjLTAiLCJjaGFpbi1zdmMtMSIsImNoYWluLXN2Yy0yIiwiY2hhaW4tc3ZjLTMiXSwiYXVkIjoiY2hhaW4tc3ZjLTQiLCJleHAiOjE3MDAwMDcyMDAsImlzcyI6ImNoYWluLXN2Yy0zIiwianRpIjoianRpLTM0ODZhMWZlNDRjODllNmRhNzhmZWJlZWU1NmJiYjkxIiwicm9vdCI6Imp0aS0zMjNiY2Q2NWMxZTIyNTZhYmNhYTdmYjNlMDNkNTM4YyIsInNjcCI6WyJkYXRhOnJlYWQiXSwic3ViIjoidXNlci1jaGFpbi0wMDEifQ.BlzlACZTWK7_kYxb0HboYsYDUiNAcKJg5Guu8oliBH8",
+      "jti": "jti-3486a1fe44c89e6da78febeee56bbb91",
+      "root_jti": "jti-323bcd65c1e2256abcaa7fb3e03d538c",
+      "parent_jti": "jti-4a824d5a9688dbdfcb68754a0e0f6bc8",
+      "tenant": "t-chain",
+      "depth": 4,
+      "payload": {
+        "iss": "chain-svc-3",
+        "sub": "user-chain-001",
+        "act": [
+          "chain-svc-0",
+          "chain-svc-1",
+          "chain-svc-2",
+          "chain-svc-3"
+        ],
+        "aud": "chain-svc-4",
+        "scp": [
+          "data:read"
+        ],
+        "exp": 1700007200,
+        "jti": "jti-3486a1fe44c89e6da78febeee56bbb91",
+        "root": "jti-323bcd65c1e2256abcaa7fb3e03d538c"
+      },
+      "replayed": false,
+      "replay_reason": null
+    },
+    {
+      "id": "chain_hop5_rejected",
+      "action": "exchange",
+      "description": "第五跳证据：4->5 将使 actor_chain 长度=5 -> CHAIN_TOO_LONG",
+      "status": "rejected",
+      "error_code": "CHAIN_TOO_LONG",
+      "message": "交换后 actor_chain 超过 4 跳（第 5 跳被拒绝）",
+      "evidence": {
+        "length_after": 5,
+        "max": 4
+      }
+    },
+    {
+      "id": "chain_cycle_rejected",
+      "action": "exchange",
+      "description": "链环证据：chain-svc-3 持 hop3 令牌（aud=chain-svc-3）试图回到 chain-svc-2 -> CHAIN_CYCLE",
+      "status": "rejected",
+      "error_code": "CHAIN_CYCLE",
+      "message": "交换将使 actor_chain 成环",
+      "evidence": {
+        "act": [
+          "chain-svc-0",
+          "chain-svc-1",
+          "chain-svc-2"
+        ],
+        "caller": "chain-svc-3",
+        "target": "chain-svc-2"
+      }
+    },
+    {
+      "id": "revoke_hop1",
+      "action": "revoke",
+      "description": "撤销祖先：第 1 跳令牌 jti 被撤销，其后代 hop2/hop3/hop4 下一次在线验证必须失效",
+      "status": "ok",
+      "revoked": true,
+      "idempotent": false,
+      "jti": "jti-149b41b206f262fa623f4a800e14dedc"
+    },
+    {
+      "id": "descendant_after_revoke",
+      "action": "verify",
+      "description": "祖先撤销证据：hop4 在线验证 -> ANCESTOR_REVOKED，证据含被撤销祖先 jti",
+      "status": "rejected",
+      "error_code": "ANCESTOR_REVOKED",
+      "message": "令牌自身或其委托祖先已被撤销",
+      "evidence": {
+        "jti": "jti-3486a1fe44c89e6da78febeee56bbb91",
+        "revoked_ancestor": "jti-149b41b206f262fa623f4a800e14dedc",
+        "revoked_at": 1700000000,
+        "reason": "security-incident-drill"
+      }
+    },
+    {
+      "id": "exchange_after_revoke",
+      "action": "exchange",
+      "description": "祖先撤销证据 2：持已失效后代继续交换 -> ANCESTOR_REVOKED",
+      "status": "rejected",
+      "error_code": "ANCESTOR_REVOKED",
+      "message": "令牌自身或其委托祖先已被撤销",
+      "evidence": {
+        "jti": "jti-4a824d5a9688dbdfcb68754a0e0f6bc8",
+        "revoked_ancestor": "jti-149b41b206f262fa623f4a800e14dedc",
+        "revoked_at": 1700000000,
+        "reason": "security-incident-drill"
+      }
+    },
+    {
+      "id": "advance_past_expiry",
+      "action": "advance",
+      "description": "时钟拨过根令牌过期时间（+4000 秒，根 exp=now+3600）",
+      "status": "ok",
+      "now": 1700004000
+    },
+    {
+      "id": "expired_verify",
+      "action": "verify",
+      "description": "过期证据：根令牌在线验证 -> TOKEN_EXPIRED",
+      "status": "rejected",
+      "error_code": "TOKEN_EXPIRED",
+      "message": "令牌已过期",
+      "evidence": {
+        "exp": 1700003600,
+        "now": 1700004000,
+        "jti": "jti-3ad333786e28de7aa1710d1dc8e45318"
+      }
+    }
+  ]
+}

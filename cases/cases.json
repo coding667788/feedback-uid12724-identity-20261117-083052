@@ -1,0 +1,437 @@
+{
+  "registry": "../samples/registry.json",
+  "db_path": "../runtime/cases.db",
+  "seed_b64url": "Y2FzZXMtZml4ZWQtc2VlZC0yMDI2",
+  "clock": {"freeze": 1700000000},
+  "cases": [
+    {
+      "id": "mint_root",
+      "action": "mint",
+      "description": "受信发行服务铸造根令牌：aud=acme-gateway，含订单读写与计费只读 scope",
+      "tenant": "t-acme",
+      "kid": "k1",
+      "issuer": "acme-idp",
+      "subject": "user-7788",
+      "audience": "acme-gateway",
+      "scopes": ["orders:read", "orders:write", "billing:read"],
+      "ttl_seconds": 3600
+    },
+    {
+      "id": "hop1_gateway_to_orders",
+      "action": "exchange",
+      "description": "合法第 1 跳：gateway 凭受众为自身的令牌向 orders 换发，scope 缩小（保留 billing:read 供下一跳）",
+      "args": {
+        "parent_token": {"$token": "mint_root"},
+        "caller": "acme-gateway",
+        "target": "acme-orders",
+        "requested_scopes": ["billing:read", "orders:read"],
+        "request_id": "req-hop1-0001"
+      }
+    },
+    {
+      "id": "hop1_verify_ok",
+      "action": "verify",
+      "description": "orders 在线验证第 1 跳令牌：受众绑定、链深度=1、祖先未撤销",
+      "args": {"token": {"$token": "hop1_gateway_to_orders"}, "caller": "acme-orders"}
+    },
+    {
+      "id": "hop2_orders_to_billing",
+      "action": "exchange",
+      "description": "合法第 2 跳：orders 向 billing 换发，scope 进一步缩小为 billing:read",
+      "args": {
+        "parent_token": {"$token": "hop1_gateway_to_orders"},
+        "caller": "acme-orders",
+        "target": "acme-billing",
+        "requested_scopes": ["billing:read"],
+        "request_id": "req-hop2-0001"
+      }
+    },
+    {
+      "id": "hop2_verify_ok",
+      "action": "verify",
+      "description": "billing 在线验证第 2 跳令牌：actor_chain=[gateway, orders]，sub 保持不变",
+      "args": {"token": {"$token": "hop2_orders_to_billing"}, "caller": "acme-billing"}
+    },
+    {
+      "id": "confused_deputy_wrong_caller",
+      "action": "exchange",
+      "description": "混淆代理证据：billing 不是根令牌 audience，却试图持根令牌发起交换 -> AUDIENCE_MISMATCH",
+      "args": {
+        "parent_token": {"$token": "mint_root"},
+        "caller": "acme-billing",
+        "target": "acme-orders",
+        "requested_scopes": ["orders:read"],
+        "request_id": "req-attacker-0001"
+      }
+    },
+    {
+      "id": "confused_deputy_unregistered_edge",
+      "action": "exchange",
+      "description": "混淆代理证据 2：orders 试图换发未注册边的 inventory -> EDGE_NOT_ALLOWED",
+      "args": {
+        "parent_token": {"$token": "hop1_gateway_to_orders"},
+        "caller": "acme-orders",
+        "target": "acme-inventory",
+        "requested_scopes": ["orders:read"],
+        "request_id": "req-attacker-0002"
+      }
+    },
+    {
+      "id": "scope_escalation",
+      "action": "exchange",
+      "description": "scope 扩大证据：hop1 令牌无 billing:read，请求加入 -> SCOPE_ESCALATION",
+      "args": {
+        "parent_token": {"$token": "hop1_gateway_to_orders"},
+        "caller": "acme-orders",
+        "target": "acme-billing",
+        "requested_scopes": ["billing:read", "orders:write"],
+        "request_id": "req-attacker-0003"
+      }
+    },
+    {
+      "id": "expiry_extension",
+      "action": "exchange",
+      "description": "到期延长证据：请求 exp 晚于父令牌 exp -> EXPIRY_EXTENDED",
+      "args": {
+        "parent_token": {"$token": "hop1_gateway_to_orders"},
+        "caller": "acme-orders",
+        "target": "acme-billing",
+        "requested_scopes": ["billing:read"],
+        "requested_expiry": 1700004000,
+        "request_id": "req-attacker-0004"
+      }
+    },
+    {
+      "id": "retry_same_request_id",
+      "action": "exchange",
+      "description": "同 request_id 重试：必须恢复 hop2 原结果（replayed=true，jti 相同）",
+      "args": {
+        "parent_token": {"$token": "hop1_gateway_to_orders"},
+        "caller": "acme-orders",
+        "target": "acme-billing",
+        "requested_scopes": ["billing:read"],
+        "request_id": "req-hop2-0001"
+      }
+    },
+    {
+      "id": "duplicate_exchange_new_request",
+      "action": "exchange",
+      "description": "去重证据：同根 jti 到 billing 的第二份交换结果（新 request_id、更窄 scope）-> DUPLICATE_EXCHANGE",
+      "args": {
+        "parent_token": {"$token": "hop1_gateway_to_orders"},
+        "caller": "acme-orders",
+        "target": "acme-billing",
+        "requested_scopes": ["billing:read"],
+        "request_id": "req-attacker-0005"
+      }
+    },
+    {
+      "id": "request_id_conflict",
+      "action": "exchange",
+      "description": "request_id 冲突证据：复用 req-hop2-0001 但改变请求体（缩短过期）-> REQUEST_CONFLICT",
+      "args": {
+        "parent_token": {"$token": "hop1_gateway_to_orders"},
+        "caller": "acme-orders",
+        "target": "acme-billing",
+        "requested_scopes": ["billing:read"],
+        "requested_expiry": 1700001800,
+        "request_id": "req-hop2-0001"
+      }
+    },
+    {
+      "id": "mint_globex_root",
+      "action": "mint",
+      "description": "另一租户 Globex 铸造根令牌（与 t-acme 同 kid=k1，密钥材料不同）",
+      "tenant": "t-globex",
+      "kid": "k1",
+      "issuer": "globex-idp",
+      "subject": "user-9900",
+      "audience": "globex-gateway",
+      "scopes": ["orders:read"],
+      "ttl_seconds": 1800
+    },
+    {
+      "id": "cross_tenant_presentation",
+      "action": "verify",
+      "description": "跨租户同 kid 证据 A：globex 令牌交给 acme-gateway 验证 -> AUDIENCE_MISMATCH/TENANT_MISMATCH",
+      "args": {"token": {"$token": "mint_globex_root"}, "caller": "acme-gateway"}
+    },
+    {
+      "id": "cross_tenant_forged_signature",
+      "action": "craft",
+      "description": "跨租户同 kid 证据 B：头声明 t-acme/k1，却用 t-globex/k1 密钥重签",
+      "mode": "cross_tenant_signed",
+      "tenant": "t-acme",
+      "kid": "k1",
+      "foreign_tenant": "t-globex",
+      "foreign_kid": "k1",
+      "issuer": "acme-idp",
+      "subject": "user-7788",
+      "audience": "acme-gateway",
+      "scopes": ["orders:read"],
+      "ttl_seconds": 3600,
+      "jti": "craft-cross-tenant-0001",
+      "root_jti": "craft-cross-tenant-0001"
+    },
+    {
+      "id": "cross_tenant_forged_verify",
+      "action": "verify",
+      "description": "跨租户伪造令牌在受害租户验证 -> BAD_SIGNATURE（同名 kid 无法绕过租户隔离）",
+      "args": {"token": {"$token": "cross_tenant_forged_signature"}, "caller": "acme-gateway"}
+    },
+    {
+      "id": "craft_remote_key_header",
+      "action": "craft",
+      "description": "封装拒绝证据：头携带 jku 远程密钥地址",
+      "mode": "remote_key_header",
+      "tenant": "t-acme",
+      "kid": "k1",
+      "issuer": "acme-idp",
+      "subject": "user-7788",
+      "audience": "acme-gateway",
+      "scopes": ["orders:read"],
+      "ttl_seconds": 3600,
+      "jti": "craft-jku-0001",
+      "root_jti": "craft-jku-0001"
+    },
+    {
+      "id": "remote_key_header_verify",
+      "action": "verify",
+      "description": "jku 令牌在头解析阶段即被拒绝 -> INVALID_HEADER",
+      "args": {"token": {"$token": "craft_remote_key_header"}, "caller": "acme-gateway"}
+    },
+    {
+      "id": "craft_unknown_alg",
+      "action": "craft",
+      "description": "封装拒绝证据：alg=RS256（仍用 HMAC 签名，排除签名噪音）",
+      "mode": "unknown_algorithm",
+      "tenant": "t-acme",
+      "kid": "k1",
+      "issuer": "acme-idp",
+      "subject": "user-7788",
+      "audience": "acme-gateway",
+      "scopes": ["orders:read"],
+      "ttl_seconds": 3600,
+      "jti": "craft-alg-0001",
+      "root_jti": "craft-alg-0001"
+    },
+    {
+      "id": "unknown_alg_verify",
+      "action": "verify",
+      "description": "未知算法 -> UNKNOWN_ALGORITHM",
+      "args": {"token": {"$token": "craft_unknown_alg"}, "caller": "acme-gateway"}
+    },
+    {
+      "id": "craft_dup_key",
+      "action": "craft",
+      "description": "封装拒绝证据：载荷手工含重复 aud 键",
+      "mode": "duplicate_json_key",
+      "tenant": "t-acme",
+      "kid": "k1",
+      "issuer": "acme-idp",
+      "subject": "user-7788",
+      "audience": "acme-gateway",
+      "scopes": ["orders:read"],
+      "ttl_seconds": 3600,
+      "jti": "craft-dup-0001",
+      "root_jti": "craft-dup-0001"
+    },
+    {
+      "id": "dup_key_verify",
+      "action": "verify",
+      "description": "重复 JSON 键 -> DUPLICATE_JSON_KEY",
+      "args": {"token": {"$token": "craft_dup_key"}, "caller": "acme-gateway"}
+    },
+    {
+      "id": "craft_bad_b64",
+      "action": "craft",
+      "description": "封装拒绝证据：签名段使用带 = 填充的非规范 base64url",
+      "mode": "non_canonical_b64",
+      "tenant": "t-acme",
+      "kid": "k1",
+      "issuer": "acme-idp",
+      "subject": "user-7788",
+      "audience": "acme-gateway",
+      "scopes": ["orders:read"],
+      "ttl_seconds": 3600,
+      "jti": "craft-b64-0001",
+      "root_jti": "craft-b64-0001"
+    },
+    {
+      "id": "bad_b64_verify",
+      "action": "verify",
+      "description": "不规范 base64url -> MALFORMED_TOKEN",
+      "args": {"token": {"$token": "craft_bad_b64"}, "caller": "acme-gateway"}
+    },
+    {
+      "id": "craft_bad_sig",
+      "action": "craft",
+      "description": "封装拒绝证据：结构合法但签名被全 0 覆盖",
+      "mode": "wrong_signature",
+      "tenant": "t-acme",
+      "kid": "k1",
+      "issuer": "acme-idp",
+      "subject": "user-7788",
+      "audience": "acme-gateway",
+      "scopes": ["orders:read"],
+      "ttl_seconds": 3600,
+      "jti": "craft-sig-0001",
+      "root_jti": "craft-sig-0001"
+    },
+    {
+      "id": "bad_sig_verify",
+      "action": "verify",
+      "description": "签名不匹配 -> BAD_SIGNATURE",
+      "args": {"token": {"$token": "craft_bad_sig"}, "caller": "acme-gateway"}
+    },
+    {
+      "id": "craft_tampered_aud",
+      "action": "craft",
+      "description": "封装拒绝证据：签名后把 aud 改成 acme-orders 且不重签",
+      "mode": "tampered_audience",
+      "tenant": "t-acme",
+      "kid": "k1",
+      "issuer": "acme-idp",
+      "subject": "user-7788",
+      "audience": "acme-gateway",
+      "new_audience": "acme-orders",
+      "scopes": ["orders:read"],
+      "ttl_seconds": 3600,
+      "jti": "craft-tamper-0001",
+      "root_jti": "craft-tamper-0001"
+    },
+    {
+      "id": "tampered_aud_verify",
+      "action": "verify",
+      "description": "aud 篡改破坏签名 -> BAD_SIGNATURE（签名绑定全部声明，不能只验签不看受众）",
+      "args": {"token": {"$token": "craft_tampered_aud"}, "caller": "acme-orders"}
+    },
+    {
+      "id": "verify_from_file",
+      "action": "verify",
+      "description": "通过 $file 引用项目内二进制样例 token_sample.bin 并在线验证",
+      "args": {"token": {"$file": "../samples/token_sample.bin"}, "caller": "acme-gateway"}
+    },
+    {
+      "id": "chain_mint",
+      "action": "mint",
+      "description": "深度链租户铸造根令牌（aud=chain-svc-0）",
+      "tenant": "t-chain",
+      "kid": "k1",
+      "issuer": "chain-svc-0",
+      "subject": "user-chain-001",
+      "audience": "chain-svc-0",
+      "scopes": ["data:read"],
+      "ttl_seconds": 7200
+    },
+    {
+      "id": "chain_hop1",
+      "action": "exchange",
+      "description": "深度链第 1 跳 0->1",
+      "args": {
+        "parent_token": {"$token": "chain_mint"},
+        "caller": "chain-svc-0",
+        "target": "chain-svc-1",
+        "requested_scopes": ["data:read"],
+        "request_id": "req-chain-0001"
+      }
+    },
+    {
+      "id": "chain_hop2",
+      "action": "exchange",
+      "description": "深度链第 2 跳 1->2",
+      "args": {
+        "parent_token": {"$token": "chain_hop1"},
+        "caller": "chain-svc-1",
+        "target": "chain-svc-2",
+        "requested_scopes": ["data:read"],
+        "request_id": "req-chain-0002"
+      }
+    },
+    {
+      "id": "chain_hop3",
+      "action": "exchange",
+      "description": "深度链第 3 跳 2->3",
+      "args": {
+        "parent_token": {"$token": "chain_hop2"},
+        "caller": "chain-svc-2",
+        "target": "chain-svc-3",
+        "requested_scopes": ["data:read"],
+        "request_id": "req-chain-0003"
+      }
+    },
+    {
+      "id": "chain_hop4",
+      "action": "exchange",
+      "description": "深度链第 4 跳 3->4（边界，允许，actor_chain 长度=4）",
+      "args": {
+        "parent_token": {"$token": "chain_hop3"},
+        "caller": "chain-svc-3",
+        "target": "chain-svc-4",
+        "requested_scopes": ["data:read"],
+        "request_id": "req-chain-0004"
+      }
+    },
+    {
+      "id": "chain_hop5_rejected",
+      "action": "exchange",
+      "description": "第五跳证据：4->5 将使 actor_chain 长度=5 -> CHAIN_TOO_LONG",
+      "args": {
+        "parent_token": {"$token": "chain_hop4"},
+        "caller": "chain-svc-4",
+        "target": "chain-svc-5",
+        "requested_scopes": ["data:read"],
+        "request_id": "req-chain-0005"
+      }
+    },
+    {
+      "id": "chain_cycle_rejected",
+      "action": "exchange",
+      "description": "链环证据：chain-svc-3 持 hop3 令牌（aud=chain-svc-3）试图回到 chain-svc-2 -> CHAIN_CYCLE",
+      "args": {
+        "parent_token": {"$token": "chain_hop3"},
+        "caller": "chain-svc-3",
+        "target": "chain-svc-2",
+        "requested_scopes": ["data:read"],
+        "request_id": "req-chain-cycle-0001"
+      }
+    },
+    {
+      "id": "revoke_hop1",
+      "action": "revoke",
+      "description": "撤销祖先：第 1 跳令牌 jti 被撤销，其后代 hop2/hop3/hop4 下一次在线验证必须失效",
+      "jti_ref": "chain_hop1",
+      "reason": "security-incident-drill"
+    },
+    {
+      "id": "descendant_after_revoke",
+      "action": "verify",
+      "description": "祖先撤销证据：hop4 在线验证 -> ANCESTOR_REVOKED，证据含被撤销祖先 jti",
+      "args": {"token": {"$token": "chain_hop4"}, "caller": "chain-svc-4"}
+    },
+    {
+      "id": "exchange_after_revoke",
+      "action": "exchange",
+      "description": "祖先撤销证据 2：持已失效后代继续交换 -> ANCESTOR_REVOKED",
+      "args": {
+        "parent_token": {"$token": "chain_hop3"},
+        "caller": "chain-svc-3",
+        "target": "chain-svc-4",
+        "requested_scopes": ["data:read"],
+        "request_id": "req-chain-after-revoke"
+      }
+    },
+    {
+      "id": "advance_past_expiry",
+      "action": "advance",
+      "description": "时钟拨过根令牌过期时间（+4000 秒，根 exp=now+3600）",
+      "seconds": 4000
+    },
+    {
+      "id": "expired_verify",
+      "action": "verify",
+      "description": "过期证据：根令牌在线验证 -> TOKEN_EXPIRED",
+      "args": {"token": {"$token": "mint_root"}, "caller": "acme-gateway"}
+    }
+  ]
+}

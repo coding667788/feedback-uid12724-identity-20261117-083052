@@ -1,0 +1,145 @@
+{
+  "version": 1,
+  "tenants": {
+    "t-acme": {
+      "keys": [
+        {
+          "kid": "k1",
+          "material_b64url": "HAZldUME9_AX7hiWzJc44k2NGipOB4OL9Bl2O1M812w"
+        }
+      ],
+      "services": {
+        "acme-idp": {
+          "display_name": "Acme 身份发行服务"
+        },
+        "acme-gateway": {
+          "display_name": "Acme 边缘网关"
+        },
+        "acme-orders": {
+          "display_name": "Acme 订单服务"
+        },
+        "acme-billing": {
+          "display_name": "Acme 计费服务"
+        },
+        "acme-inventory": {
+          "display_name": "Acme 库存服务"
+        }
+      }
+    },
+    "t-globex": {
+      "keys": [
+        {
+          "kid": "k1",
+          "material_b64url": "tbCDlTHIqxQx3aSgPgUVHJUsK-BRIWgW-8rad_u0c7g"
+        }
+      ],
+      "services": {
+        "globex-idp": {
+          "display_name": "Globex 身份发行服务"
+        },
+        "globex-gateway": {
+          "display_name": "Globex 网关"
+        },
+        "globex-orders": {
+          "display_name": "Globex 订单服务"
+        }
+      }
+    },
+    "t-chain": {
+      "keys": [
+        {
+          "kid": "k1",
+          "material_b64url": "zmYVmqVJHxk-beuuPN9HiiEZwuflsikXIjEGF9i-7SQ"
+        }
+      ],
+      "services": {
+        "chain-svc-0": {
+          "display_name": "链式服务 0"
+        },
+        "chain-svc-1": {
+          "display_name": "链式服务 1"
+        },
+        "chain-svc-2": {
+          "display_name": "链式服务 2"
+        },
+        "chain-svc-3": {
+          "display_name": "链式服务 3"
+        },
+        "chain-svc-4": {
+          "display_name": "链式服务 4"
+        },
+        "chain-svc-5": {
+          "display_name": "链式服务 5"
+        }
+      }
+    }
+  },
+  "edges": [
+    {
+      "tenant": "t-acme",
+      "from": "acme-gateway",
+      "to": "acme-orders",
+      "scopes": [
+        "orders:read",
+        "orders:write",
+        "billing:read"
+      ]
+    },
+    {
+      "tenant": "t-acme",
+      "from": "acme-orders",
+      "to": "acme-billing",
+      "scopes": [
+        "billing:read"
+      ]
+    },
+    {
+      "tenant": "t-globex",
+      "from": "globex-gateway",
+      "to": "globex-orders",
+      "scopes": [
+        "orders:read"
+      ]
+    },
+    {
+      "tenant": "t-chain",
+      "from": "chain-svc-0",
+      "to": "chain-svc-1",
+      "scopes": [
+        "data:read"
+      ]
+    },
+    {
+      "tenant": "t-chain",
+      "from": "chain-svc-1",
+      "to": "chain-svc-2",
+      "scopes": [
+        "data:read"
+      ]
+    },
+    {
+      "tenant": "t-chain",
+      "from": "chain-svc-2",
+      "to": "chain-svc-3",
+      "scopes": [
+        "data:read"
+      ]
+    },
+    {
+      "tenant": "t-chain",
+      "from": "chain-svc-3",
+      "to": "chain-svc-4",
+      "scopes": [
+        "data:read"
+      ]
+    },
+    {
+      "tenant": "t-chain",
+      "from": "chain-svc-4",
+      "to": "chain-svc-5",
+      "scopes": [
+        "data:read"
+      ]
+    }
+  ]
+}
